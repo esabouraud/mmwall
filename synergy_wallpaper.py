@@ -33,9 +33,9 @@ def compute_resize_resolution(imagewidth, imageheight, screenwidth, screenheight
 		resizeheight *= screenwidth
 		resizeheight /= imagewidth
 	if (screenheight > resizeheight):
+		resizewidth *= screenheight
+		resizewidth /= resizeheight
 		resizeheight = screenheight
-		resizewidth *= resizeheight
-		resizewidth /= screenheight
 
 	return (resizewidth, resizeheight)
 

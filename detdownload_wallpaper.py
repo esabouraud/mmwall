@@ -48,7 +48,7 @@ def get_wallpaper(options):
 				save_image(a.get("href"))
 				if (options.singledl == True):
 					break
-			except urllib2.HTTPError:
+			except urllib2.HTTPError as e:
 				print e.read()
 		#print "%s (%d, %d) %f" % (img.get('alt'), imgwidth, imgheight, imgratio)
 	
