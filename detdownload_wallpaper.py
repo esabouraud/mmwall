@@ -48,4 +48,6 @@ def get_wallpaper():
 		#print "%s (%d, %d) %f" % (img.get('alt'), imgwidth, imgheight, imgratio)
 	
 if __name__=='__main__':
+	if (False == os.path.isdir(OUTPUTDIR)):
+		os.makedirs(OUTPUTDIR)
 	get_wallpaper()

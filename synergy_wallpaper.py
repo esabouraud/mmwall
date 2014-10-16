@@ -5,11 +5,12 @@ from PIL import Image
 import ctypes
 import os
 import random
+from decimal import *
 
 INPUTDIR = "data"
 OUTPUTDIR = "current"
-OUTPUT_SCREENS = [(1280, 1024), (2560, 1024)]
-
+#OUTPUT_SCREENS = [(1280, 1024), (2560, 1024)]
+OUTPUT_SCREENS = [(1360, 768), (1280, 1024)]
 
 # compute total virtual screen size
 def compute_screens_resolutions(screens):
@@ -17,11 +18,7 @@ def compute_screens_resolutions(screens):
 	totalheight = 0
 	for s in screens:
 		totalwidth += s[0]
-		if (totalheight == 0):
-			totalheight = s[1]
-		else:
-			if (totalheight != s[1]):
-				print "Error : Multiple screen heights not handled !"
+		totalheight = max(totalheight, s[1])
 	
 	return (totalwidth, totalheight)
 
@@ -48,12 +45,13 @@ def compute_crop_coordinates(imagewidth, imageheight, screenwidth, screenheight)
 	x2 = imagewidth
 	y2 = imageheight
 
+	# todo: improve rouding, there is often a 1px error
 	if (screenwidth < imagewidth):
-		x1 = (imagewidth - screenwidth) / 2
+		x1 = int(round(Decimal(imagewidth - screenwidth) / 2))
 		x2 -= x1
 	
 	if (screenheight < imageheight):
-		y1 = (imageheight - screenheight) / 2
+		y1 = int(round(Decimal(imageheight - screenheight) / 2))
 		y2 -= y1
 	
 	return (x1, y1, x2, y2)
@@ -76,18 +74,20 @@ def generate_wallpaper(inputimagepath, outputdir, screenresolutions):
 		print "Cropped image coordinates are: (%d,%d),(%d,%d))" % (x1, y1, x2, y2)
 		im = im.crop((x1, y1, x2, y2))
 	
-	im.save("im.jpg")
+	im.save("im.bmp")
 	
 	x = 0
 	i = 0
 	for s in screenresolutions:
 		wall = im.crop((x, 0, x + s[0], s[1]))
 		wall.load()
-		wall.save(os.path.join(outputdir, "wall%d.jpg" % i))
+		wall.save(os.path.join(outputdir, "wall%d.bmp" % i))
 		x += s[0]
 		i += 1
 		
 	
 if __name__=='__main__':
+	if (False == os.path.isdir(OUTPUTDIR)):
+		os.makedirs(OUTPUTDIR)
 	inputimagepath = os.path.join(INPUTDIR, random.choice(os.listdir(INPUTDIR)))
 	generate_wallpaper(inputimagepath, OUTPUTDIR, OUTPUT_SCREENS)
