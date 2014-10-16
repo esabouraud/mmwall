@@ -1,6 +1,7 @@
 #!/bin/python
 # Download wallpapers from Dead End Thrills random feed
 
+from optparse import OptionParser
 from bs4 import BeautifulSoup
 import urllib2
 from decimal import *
@@ -24,11 +25,10 @@ def save_image(imgurl):
 		f.write(response.read())
 		print "Download completed"
 	except urllib2.HTTPError as e:
-		print e.read()
 		print "Download aborted"
-		return
+		raise e
 
-def get_wallpaper():
+def get_wallpaper(options):
 	response = urllib2.urlopen(URL)
 	html = response.read()
 	
@@ -43,11 +43,23 @@ def get_wallpaper():
 		imgheight = int(img.get("height"))
 		imgratio = round(Decimal(imgwidth) / Decimal(imgheight), 1)
 		# Only get images suitable for multiscreen wallpapers
-		if (imgratio >= 2.0):
-			save_image(a.get("href"))
+		if (imgratio >= options.minratio):
+			try:
+				save_image(a.get("href"))
+				if (options.singledl == True):
+					break
+			except urllib2.HTTPError:
+				print e.read()
 		#print "%s (%d, %d) %f" % (img.get('alt'), imgwidth, imgheight, imgratio)
 	
 if __name__=='__main__':
+	parser = OptionParser()
+	parser.add_option("-s", "--single-download", dest="singledl", action="store_true", default=False, help="Download a single image if set, instead of all found")
+	parser.add_option("-r", "--img-ratio", dest="minratio", default=2.0, help="Minimum Width/Height ratio of images candidates for download")
+
+	(options, args) = parser.parse_args()
+	
 	if (False == os.path.isdir(OUTPUTDIR)):
 		os.makedirs(OUTPUTDIR)
-	get_wallpaper()
+	
+	get_wallpaper(options)

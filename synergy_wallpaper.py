@@ -1,16 +1,18 @@
 #!/bin/python
 # Resize an image and split it to be used as wallpapers on adjacent desktop (for use with synergy KM switch for example)
 
+from optparse import OptionParser
 from PIL import Image
 import ctypes
 import os
 import random
 from decimal import *
+import glob
 
 INPUTDIR = "data"
 OUTPUTDIR = "current"
 #OUTPUT_SCREENS = [(1280, 1024, 0), (2560, 1024, 0)]
-OUTPUT_SCREENS = [(1366, 768, 450), (1280, 1024, 0)]
+OUTPUT_SCREENS = [(1366, 768, 550), (1280, 1024, 0)]
 
 # compute total virtual screen size
 def compute_screens_resolutions(screens):
@@ -87,7 +89,17 @@ def generate_wallpaper(inputimagepath, outputdir, screenresolutions):
 		
 	
 if __name__=='__main__':
+	parser = OptionParser()
+	parser.add_option("-L", "--use-latest-image", dest="latest", action="store_true", default=False, help="Use the most recent image found in images directory if true, otherwise pick one at random")
+	
+	(options, args) = parser.parse_args()
+	
 	if (False == os.path.isdir(OUTPUTDIR)):
 		os.makedirs(OUTPUTDIR)
-	inputimagepath = os.path.join(INPUTDIR, random.choice(os.listdir(INPUTDIR)))
+	
+	inputimagepath = ""
+	if (options.latest == True):
+		inputimagepath = max(glob.iglob(os.path.join(INPUTDIR, "*.*")), key=os.path.getctime)
+	else:
+		inputimagepath = os.path.join(INPUTDIR, random.choice(os.listdir(INPUTDIR)))
 	generate_wallpaper(inputimagepath, OUTPUTDIR, OUTPUT_SCREENS)
