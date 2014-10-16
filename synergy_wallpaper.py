@@ -9,17 +9,16 @@ from decimal import *
 
 INPUTDIR = "data"
 OUTPUTDIR = "current"
-#OUTPUT_SCREENS = [(1280, 1024), (2560, 1024)]
-OUTPUT_SCREENS = [(1360, 768), (1280, 1024)]
+#OUTPUT_SCREENS = [(1280, 1024, 0), (2560, 1024, 0)]
+OUTPUT_SCREENS = [(1366, 768, 450), (1280, 1024, 0)]
 
 # compute total virtual screen size
 def compute_screens_resolutions(screens):
-	totalwidth = 0
-	totalheight = 0
-	for s in screens:
-		totalwidth += s[0]
-		totalheight = max(totalheight, s[1])
-	
+	totalwidth = sum([s[0] for s in screens])
+	totalheight = max([s[1] for s in screens])
+	totalheightoffset = sum([abs(s[2]) for s in screens])
+	totalheight += totalheightoffset
+
 	return (totalwidth, totalheight)
 
 # increase size of image so that screen is filled, while keeping original ratio
@@ -34,7 +33,7 @@ def compute_resize_resolution(imagewidth, imageheight, screenwidth, screenheight
 	if (screenheight > resizeheight):
 		resizeheight = screenheight
 		resizewidth *= resizeheight
-		resizewidth /= screenwidth
+		resizewidth /= screenheight
 
 	return (resizewidth, resizeheight)
 
@@ -57,16 +56,17 @@ def compute_crop_coordinates(imagewidth, imageheight, screenwidth, screenheight)
 	return (x1, y1, x2, y2)
 
 def generate_wallpaper(inputimagepath, outputdir, screenresolutions):
+	print "Source image: %s" % inputimagepath
 	(screenwidth, screenheight) = compute_screens_resolutions(screenresolutions)
-	print "Output screen resolution is: %d,%d)" % (screenwidth, screenheight)
+	print "Output screen resolution is: (%d,%d)" % (screenwidth, screenheight)
 	
 	im = Image.open(inputimagepath)
 	(imagewidth, imageheight) = im.size
-	print "Source image resolution is: %d,%d)" % (imagewidth, imageheight)
+	print "Source image resolution is: (%d,%d)" % (imagewidth, imageheight)
 	
 	(resizewidth, resizeheight) = compute_resize_resolution(imagewidth, imageheight, screenwidth, screenheight)
 	if (imagewidth != resizewidth or imageheight != resizeheight):
-		print "Upscaled image resolution is: %d,%d)" % (resizewidth, resizeheight)
+		print "Upscaled image resolution is: (%d,%d)" % (resizewidth, resizeheight)
 		im = im.resize((resizewidth, resizeheight), Image.BICUBIC)
 	
 	if (screenwidth != resizewidth or screenheight != resizeheight):
@@ -79,7 +79,7 @@ def generate_wallpaper(inputimagepath, outputdir, screenresolutions):
 	x = 0
 	i = 0
 	for s in screenresolutions:
-		wall = im.crop((x, 0, x + s[0], s[1]))
+		wall = im.crop((x, s[2], x + s[0], s[1] + s[2]))
 		wall.load()
 		wall.save(os.path.join(outputdir, "wall%d.bmp" % i))
 		x += s[0]

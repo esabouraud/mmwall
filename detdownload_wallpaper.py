@@ -1,5 +1,5 @@
 #!/bin/python
-# Download wallpapers from DET
+# Download wallpapers from Dead End Thrills random feed
 
 from bs4 import BeautifulSoup
 import urllib2
