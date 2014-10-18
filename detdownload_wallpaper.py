@@ -28,7 +28,10 @@ def save_image(imgurl):
 		print "Download aborted"
 		raise e
 
-def get_wallpaper(options):
+def get_wallpaper(singledl, minratio):
+	if (False == os.path.isdir(OUTPUTDIR)):
+		os.makedirs(OUTPUTDIR)
+
 	response = urllib2.urlopen(URL)
 	html = response.read()
 	
@@ -43,23 +46,20 @@ def get_wallpaper(options):
 		imgheight = int(img.get("height"))
 		imgratio = round(Decimal(imgwidth) / Decimal(imgheight), 1)
 		# Only get images suitable for multiscreen wallpapers
-		if (imgratio >= options.minratio):
+		if (imgratio >= minratio):
 			try:
 				save_image(a.get("href"))
-				if (options.singledl == True):
+				if (singledl == True):
 					break
 			except urllib2.HTTPError as e:
 				print e.read()
 		#print "%s (%d, %d) %f" % (img.get('alt'), imgwidth, imgheight, imgratio)
-	
+
+		
 if __name__=='__main__':
 	parser = OptionParser()
 	parser.add_option("-s", "--single-download", dest="singledl", action="store_true", default=False, help="Download a single image if set, instead of all found")
 	parser.add_option("-r", "--img-ratio", dest="minratio", default=2.0, help="Minimum Width/Height ratio of images candidates for download")
 
 	(options, args) = parser.parse_args()
-	
-	if (False == os.path.isdir(OUTPUTDIR)):
-		os.makedirs(OUTPUTDIR)
-	
-	get_wallpaper(options)
+	get_wallpaper(options.singledl, options.minratio)

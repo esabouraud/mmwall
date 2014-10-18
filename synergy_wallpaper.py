@@ -12,7 +12,8 @@ import glob
 INPUTDIR = "data"
 OUTPUTDIR = "current"
 #OUTPUT_SCREENS = [(1280, 1024, 0), (2560, 1024, 0)]
-OUTPUT_SCREENS = [(1366, 768, 550), (1280, 1024, 0)]
+#OUTPUT_SCREENS = [(1366, 768, 550), (1280, 1024, 0)]
+OUTPUT_SCREENS = [(1280, 1024, 0)]
 
 # compute total virtual screen size
 def compute_screens_resolutions(screens):
@@ -86,20 +87,23 @@ def generate_wallpaper(inputimagepath, outputdir, screenresolutions):
 		wall.save(os.path.join(outputdir, "wall%d.bmp" % i))
 		x += s[0]
 		i += 1
-		
+
+
+def make_wallpapers(uselatest):
+	if (False == os.path.isdir(OUTPUTDIR)):
+		os.makedirs(OUTPUTDIR)
 	
+	inputimagepath = ""
+	if (uselatest == True):
+		inputimagepath = max(glob.iglob(os.path.join(INPUTDIR, "*.*")), key=os.path.getctime)
+	else:
+		inputimagepath = os.path.join(INPUTDIR, random.choice(os.listdir(INPUTDIR)))
+	generate_wallpaper(inputimagepath, OUTPUTDIR, OUTPUT_SCREENS)
+
+		
 if __name__=='__main__':
 	parser = OptionParser()
 	parser.add_option("-L", "--use-latest-image", dest="latest", action="store_true", default=False, help="Use the most recent image found in images directory if true, otherwise pick one at random")
 	
 	(options, args) = parser.parse_args()
-	
-	if (False == os.path.isdir(OUTPUTDIR)):
-		os.makedirs(OUTPUTDIR)
-	
-	inputimagepath = ""
-	if (options.latest == True):
-		inputimagepath = max(glob.iglob(os.path.join(INPUTDIR, "*.*")), key=os.path.getctime)
-	else:
-		inputimagepath = os.path.join(INPUTDIR, random.choice(os.listdir(INPUTDIR)))
-	generate_wallpaper(inputimagepath, OUTPUTDIR, OUTPUT_SCREENS)
+	make_wallpapers(options.latest)
