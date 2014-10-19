@@ -8,12 +8,10 @@ import os
 import random
 from decimal import *
 import glob
+import ast
 
 INPUTDIR = "data"
 OUTPUTDIR = "current"
-#OUTPUT_SCREENS = [(1280, 1024, 0), (2560, 1024, 0)]
-#OUTPUT_SCREENS = [(1366, 768, 550), (1280, 1024, 0)]
-OUTPUT_SCREENS = [(1280, 1024, 0)]
 
 # compute total virtual screen size
 def compute_screens_resolutions(screens):
@@ -89,7 +87,7 @@ def generate_wallpaper(inputimagepath, outputdir, screenresolutions):
 		i += 1
 
 
-def make_wallpapers(uselatest):
+def make_wallpapers(uselatest, outputscreens):
 	if (False == os.path.isdir(OUTPUTDIR)):
 		os.makedirs(OUTPUTDIR)
 	
@@ -98,12 +96,13 @@ def make_wallpapers(uselatest):
 		inputimagepath = max(glob.iglob(os.path.join(INPUTDIR, "*.*")), key=os.path.getctime)
 	else:
 		inputimagepath = os.path.join(INPUTDIR, random.choice(os.listdir(INPUTDIR)))
-	generate_wallpaper(inputimagepath, OUTPUTDIR, OUTPUT_SCREENS)
+	generate_wallpaper(inputimagepath, OUTPUTDIR, outputscreens)
 
 		
 if __name__=='__main__':
 	parser = OptionParser()
 	parser.add_option("-L", "--use-latest-image", dest="latest", action="store_true", default=False, help="Use the most recent image found in images directory if true, otherwise pick one at random")
-	
+	parser.add_option("-O", "--output-screens", dest="outputscreens", default="[(1366, 768, 550), (1280, 1024, 0)]", help="Left-to-right ouput screens resolutions as a list of tuples: [(width1, height1, vertical offset1), ...]")
+
 	(options, args) = parser.parse_args()
-	make_wallpapers(options.latest)
+	make_wallpapers(options.latest, ast.literal_eval(options.outputscreens))
