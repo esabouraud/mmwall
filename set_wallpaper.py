@@ -9,10 +9,13 @@ FILEPATTERN = "wall%d.bmp"
 
 # set windows background
 def set_wallpaper(walldir, screenid):
-	filepath = os.path.join(walldir, FILEPATTERN % int(screenid))
+	filepath = os.path.abspath(os.path.join(walldir, FILEPATTERN % int(screenid)))
 	print "Setting wallpaper %s" % filepath
-	SPI_SETDESKWALLPAPER = 20 
-	ctypes.windll.user32.SystemParametersInfoA(SPI_SETDESKWALLPAPER, 0, filepath , 0)
+	SPI_SETDESKWALLPAPER = 20
+	SPIF_UPDATEINIFILE = 0x01
+	SPIF_SENDWININICHANGE = 0x02
+	
+	ctypes.windll.user32.SystemParametersInfoA(SPI_SETDESKWALLPAPER, 0, filepath, SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE)
 
 if __name__=='__main__':
 	parser = OptionParser()

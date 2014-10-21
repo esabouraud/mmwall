@@ -50,7 +50,7 @@ def get_wallpaper(singledl, minratio):
 		divmain = soupimg.find("div", {"id":"main"})
 		divimg = divmain.find("div", {"id":"SingleImageContainer"})
 		aimg = divimg.find("a", {"title":True}, {"href":True})
-		print aimg
+		#print aimg
 		try:
 			save_image(BASEURL + aimg.get("href"))
 			if (singledl == True):
