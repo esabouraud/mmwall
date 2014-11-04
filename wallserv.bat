@@ -1,8 +1,10 @@
 @echo off
 @rem Do the heavy lifting
 @rem WALLFTP must be set (localhost, 192.168.1.1...)
-python detdownload_wallpaper.py -s
-rem python tmbdownload_wallpaper.py -s
+@rem python detdownload_wallpaper.py -s
+@rem python tmbdownload_wallpaper.py -s
+@rem python localdownload_wallpaper.py -s
+python randomdownload_wallpaper.py -s
 python synergy_wallpaper.py -L -O %1
 @rem python ftpsync_wallpaper.py -H %WALLFTP% -s -i 1
 python set_wallpaper.py -i 1 -d current

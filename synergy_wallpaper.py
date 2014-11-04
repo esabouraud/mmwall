@@ -93,7 +93,7 @@ def make_wallpapers(uselatest, outputscreens):
 	
 	inputimagepath = ""
 	if (uselatest == True):
-		inputimagepath = max(glob.iglob(os.path.join(INPUTDIR, "*.*")), key=os.path.getctime)
+		inputimagepath = max(glob.iglob(os.path.join(INPUTDIR, "*.*")), key=os.path.getmtime)
 	else:
 		inputimagepath = os.path.join(INPUTDIR, random.choice(os.listdir(INPUTDIR)))
 	generate_wallpaper(inputimagepath, OUTPUTDIR, outputscreens)
