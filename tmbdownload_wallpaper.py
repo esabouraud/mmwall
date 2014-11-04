@@ -1,5 +1,5 @@
 #!/bin/python
-# Download wallpapers from Dead End Thrills random feed
+# Download wallpapers from Triple Monitor Backgrounds random feed
 
 from optparse import OptionParser
 from bs4 import BeautifulSoup

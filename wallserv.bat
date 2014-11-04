@@ -1,11 +1,12 @@
 @echo off
 @rem Do the heavy lifting
 @rem WALLFTP must be set (localhost, 192.168.1.1...)
-rem python detdownload_wallpaper.py -s
-python tmbdownload_wallpaper.py -s
+python detdownload_wallpaper.py -s
+rem python tmbdownload_wallpaper.py -s
 python synergy_wallpaper.py -L -O %1
 @rem python ftpsync_wallpaper.py -H %WALLFTP% -s -i 1
 python set_wallpaper.py -i 1 -d current
+python set_wallpaper_logon.py -i 1 -d current -s %2
 
 @rem Poor man's RPC to set wallpaper on client
 @rem WALLHOST, WALLUSER and WALLPASS must be set
