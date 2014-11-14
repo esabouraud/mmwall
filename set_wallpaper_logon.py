@@ -3,14 +3,19 @@
 from optparse import OptionParser
 import os
 import ast
+import sys
 from PIL import Image
 
 LOCALDIR = "local"
 FILEPATTERN = "wall%d.bmp"
 
 def set_wallpaper_logon(walldir, screenid, size):
-	# Check HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI\Background\OEMBackground == 1
+	if sys.platform.startswith("win") == False:
+		return
+	if sys.getwindowsversion().major < 6:
+		return
 
+	# Check HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI\Background\OEMBackground == 1
 	inputimagepath = os.path.abspath(os.path.join(walldir, FILEPATTERN % int(screenid)))
 	print "Setting wallpaper logon from %s" % inputimagepath
 	im = Image.open(inputimagepath)
