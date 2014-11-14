@@ -9,15 +9,18 @@ import random
 from decimal import *
 import glob
 import ast
+from collections import namedtuple
 
 INPUTDIR = "data"
 OUTPUTDIR = "current"
+ScreenProperties = namedtuple("ScreenProperties", "width height voffset id")
+
 
 # compute total virtual screen size
 def compute_screens_resolutions(screens):
-	totalwidth = sum([s[0] for s in screens])
-	totalheight = max([s[1] for s in screens])
-	totalheightoffset = sum([abs(s[2]) for s in screens])
+	totalwidth = sum([s.width for s in screens])
+	totalheight = max([s.height for s in screens])
+	totalheightoffset = sum([abs(s.voffset) for s in screens])
 	totalheight += totalheightoffset
 
 	return (totalwidth, totalheight)
@@ -78,13 +81,40 @@ def generate_wallpaper(inputimagepath, outputdir, screenresolutions):
 	im.save("im.bmp")
 	
 	x = 0
+	screenid = 0
+	wallpapers = []
 	i = 0
 	for s in screenresolutions:
-		wall = im.crop((x, s[2], x + s[0], s[1] + s[2]))
+		wall = im.crop((x, s.voffset, x + s.width, s.height + s.voffset))
 		wall.load()
+		wallpapers.append(wall)
 		wall.save(os.path.join(outputdir, "wall%d.bmp" % i))
-		x += s[0]
-		i += 1
+		x += s.width
+		i+=1
+	"""
+	
+	wsl = zip(screenresolutions, wallpapers)
+	
+	w = None
+	screenid = None
+	for s, wall in wsl:
+		if w == None:
+			w = wall
+			#Image.new(wall.mode, wall.size)
+			screenid = s.id
+		else:
+			if screenid == s.id:
+				w2 = Image.new(w.mode, (w.size[0] + wall.size[0], max([w.size[1], wall.size[1]])))
+				w2.paste(w, (0,0))
+				print (0, wall.size[1] - abs(s.voffset), wall.size[0], wall.size[1])
+				w2.paste(wall.crop((0, wall.size[1] - abs(s.voffset), wall.size[0], wall.size[1])), (w.size[0], 0))
+				w2.paste(wall.crop((0, abs(s.voffset), wall.size[0], wall.size[1] - abs(s.voffset))), (w.size[0], wall.size[1] - abs(s.voffset)))
+				w = w2
+			else:
+				w.save(os.path.join(outputdir, "wall%d.bmp" % screenid))
+				w = Image.new(wall.mode, wall.size)
+				screenid = s.id
+	w.save(os.path.join(outputdir, "wall%d.bmp" % screenid))"""
 
 
 def make_wallpapers(uselatest, outputscreens):
@@ -96,13 +126,13 @@ def make_wallpapers(uselatest, outputscreens):
 		inputimagepath = max(glob.iglob(os.path.join(INPUTDIR, "*.*")), key=os.path.getmtime)
 	else:
 		inputimagepath = os.path.join(INPUTDIR, random.choice(os.listdir(INPUTDIR)))
-	generate_wallpaper(inputimagepath, OUTPUTDIR, outputscreens)
+	generate_wallpaper(inputimagepath, OUTPUTDIR, [ScreenProperties(screen[0], screen[1], screen[2], screen[3]) for screen in outputscreens])
 
 		
 if __name__=='__main__':
 	parser = OptionParser()
 	parser.add_option("-L", "--use-latest-image", dest="latest", action="store_true", default=False, help="Use the most recent image found in images directory if true, otherwise pick one at random")
-	parser.add_option("-O", "--output-screens", dest="outputscreens", default="[(1366, 768, 550), (1280, 1024, 0)]", help="Left-to-right ouput screens resolutions as a list of tuples: [(width1, height1, vertical offset1), ...]")
+	parser.add_option("-O", "--output-screens", dest="outputscreens", default="[(1366, 768, 550, 0), (1280, 1024, 0, 1)]", help="Left-to-right ouput screens resolutions as a list of tuples: [(width1, height1, vertical offset1), ...]")
 
 	(options, args) = parser.parse_args()
 	make_wallpapers(options.latest, ast.literal_eval(options.outputscreens))
