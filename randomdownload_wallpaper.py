@@ -5,9 +5,11 @@ import random
 import detdownload_wallpaper
 import tmbdownload_wallpaper
 import localdownload_wallpaper
+import wpfdownload_wallpaper
+import ifldownload_wallpaper
 
 def get_wallpaper(singledl, minratio):
-	downloaders = [detdownload_wallpaper, tmbdownload_wallpaper, localdownload_wallpaper]
+	downloaders = [detdownload_wallpaper, tmbdownload_wallpaper, localdownload_wallpaper, wpfdownload_wallpaper, ifldownload_wallpaper]
 	random.choice(downloaders).get_wallpaper(singledl, minratio)
 
 if __name__=='__main__':
