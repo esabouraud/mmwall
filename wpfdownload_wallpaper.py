@@ -1,5 +1,5 @@
 #!/bin/python
-# Download wallpapers from Dead End Thrills random feed
+# Download wallpapers from Wallpaper Fusion search feed
 
 from optparse import OptionParser
 from bs4 import BeautifulSoup
@@ -39,7 +39,7 @@ def get_wallpaper(singledl, minratio):
 	guids = souprss.find_all("guid")
 	random.shuffle(guids)
 	for g in guids:
-		responseimg = urllib2.urlopen(guids[0].contents[0])
+		responseimg = urllib2.urlopen(g.contents[0])
 		htmlimg = responseimg.read()
 		soup = BeautifulSoup(htmlimg)
 		orig = soup.find("div", {"class":"MonOrig"})
