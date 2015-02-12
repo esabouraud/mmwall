@@ -9,6 +9,8 @@ import random
 from decimal import *
 import glob
 import ast
+import itertools
+import operator
 from collections import namedtuple
 
 INPUTDIR = "data"
@@ -19,10 +21,7 @@ ScreenProperties = namedtuple("ScreenProperties", "width height voffset id")
 # compute total virtual screen size
 def compute_screens_resolutions(screens):
 	totalwidth = sum([s.width for s in screens])
-	totalheight = max([s.height for s in screens])
-	totalheightoffset = sum([abs(s.voffset) for s in screens])
-	totalheight += totalheightoffset
-
+	totalheight = max([s.height + abs(s.voffset) for s in screens])
 	return (totalwidth, totalheight)
 
 # increase size of image so that screen is filled, while keeping original ratio
@@ -59,6 +58,30 @@ def compute_crop_coordinates(imagewidth, imageheight, screenwidth, screenheight)
 	
 	return (x1, y1, x2, y2)
 
+	
+def save_wallpaper(resolutionwallpapers, id, outputdir):
+	if len(resolutionwallpapers) == 0:
+		return
+	elif len(resolutionwallpapers) == 1:
+		w = resolutionwallpapers[0][1]
+	else:
+		wallwidth = sum([rw[0].width for rw in resolutionwallpapers])
+		wallheight = max([rw[0].height + abs(rw[0].voffset) for rw in resolutionwallpapers])
+		#print "wallwidth=%d, wallheight=%d" % (wallwidth, wallheight)
+		w = Image.new(resolutionwallpapers[0][1].mode, (wallwidth, wallheight))
+		x = 0
+		y = 0
+		baseoffset = resolutionwallpapers[0][0].voffset
+		# TBD : check usage of rw[0].voffset
+		for rw in resolutionwallpapers:
+			w.paste(rw[1], (x, y - baseoffset + rw[0].voffset))
+			if baseoffset != 0:
+				w.paste(rw[1], (x, wallheight - baseoffset + rw[0].voffset))
+			x += rw[1].size[0]
+		
+	w.save(os.path.join(outputdir, "wall%d.bmp" % id))	
+		
+
 def generate_wallpaper(inputimagepath, outputdir, screenresolutions):
 	print "Source image: %s" % inputimagepath
 	(screenwidth, screenheight) = compute_screens_resolutions(screenresolutions)
@@ -83,39 +106,20 @@ def generate_wallpaper(inputimagepath, outputdir, screenresolutions):
 	x = 0
 	screenid = 0
 	wallpapers = []
-	i = 0
+	#i = 0
 	for s in screenresolutions:
 		wall = im.crop((x, s.voffset, x + s.width, s.height + s.voffset))
 		wall.load()
 		wallpapers.append(wall)
-		wall.save(os.path.join(outputdir, "wall%d.bmp" % i))
+		#wall.save(os.path.join(outputdir, "wall%d.bmp" % i))
 		x += s.width
-		i+=1
-	"""
-	
+	#	i+=1
+		
 	wsl = zip(screenresolutions, wallpapers)
-	
-	w = None
-	screenid = None
-	for s, wall in wsl:
-		if w == None:
-			w = wall
-			#Image.new(wall.mode, wall.size)
-			screenid = s.id
-		else:
-			if screenid == s.id:
-				w2 = Image.new(w.mode, (w.size[0] + wall.size[0], max([w.size[1], wall.size[1]])))
-				w2.paste(w, (0,0))
-				print (0, wall.size[1] - abs(s.voffset), wall.size[0], wall.size[1])
-				w2.paste(wall.crop((0, wall.size[1] - abs(s.voffset), wall.size[0], wall.size[1])), (w.size[0], 0))
-				w2.paste(wall.crop((0, abs(s.voffset), wall.size[0], wall.size[1] - abs(s.voffset))), (w.size[0], wall.size[1] - abs(s.voffset)))
-				w = w2
-			else:
-				w.save(os.path.join(outputdir, "wall%d.bmp" % screenid))
-				w = Image.new(wall.mode, wall.size)
-				screenid = s.id
-	w.save(os.path.join(outputdir, "wall%d.bmp" % screenid))"""
-
+	for key, group in itertools.groupby(wsl, lambda x: x[0].id):
+		l = list(group)
+		save_wallpaper(l, key, outputdir)
+		
 
 def make_wallpapers(uselatest, outputscreens):
 	if (False == os.path.isdir(OUTPUTDIR)):
