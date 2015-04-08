@@ -17,7 +17,7 @@ def save_image(imgurl):
 		print "No regexp match for %s" % imgurl
 		return
 	#print "%s_%s" % (m.group(1), m.group(2))
-	filepath = os.path.join("data", "%s_%s" % (m.group(1), m.group(2)))
+	filepath = os.path.join("data", "DET_%s_%s" % (m.group(1), m.group(2)))
 	print "Downloading %s as %s..." % (imgurl, filepath)
 	try:
 		response = urllib2.urlopen(imgurl)
