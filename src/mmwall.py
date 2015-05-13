@@ -1,5 +1,7 @@
 #!/bin/python
 
+# mmwall launcher
+# mmwall currently only works on windows, for wallpaper local and remote setting (uses Win32 API, network drive mount and psexec)
 
 import subprocess
 import shutil
@@ -43,7 +45,7 @@ def run_mmwall(cfgfile):
 	config = ConfigParser.ConfigParser()
 	config.read(cfgfile)
 	screenratio = config.getfloat('general', 'screenratio')
-	print screenratio
+	#print screenratio
 
 	screenconf = []
 	for sec in config.sections():
@@ -51,7 +53,7 @@ def run_mmwall(cfgfile):
 		if matchsec != None:
 			idx = int(matchsec.group(1))
 			screenconf.append((config.getint(sec, 'screenwidth'), config.getint(sec, 'screenheight'), config.getint(sec, 'screenvoffset'), idx))	
-	print screenconf
+	#print screenconf
 	
 	randomdownload_wallpaper.get_wallpaper(True, screenratio)
 	synergy_wallpaper.make_wallpapers(True, screenconf)
@@ -59,8 +61,7 @@ def run_mmwall(cfgfile):
 	for sec in config.sections():
 		matchsec = re.match('^host-(\d+)$', sec)
 		if matchsec != None:
-			idx = int(matchsec.group(1))
-			
+			idx = int(matchsec.group(1))	
 			if config.has_option(sec, 'logonscreenwidth') and config.has_option(sec, 'logonscreenheight'):
 				logonscreensize = (config.getint(sec, 'logonscreenwidth'), config.getint(sec, 'logonscreenheight'))
 			else:
@@ -71,6 +72,7 @@ def run_mmwall(cfgfile):
 			else:
 				set_wallpaper.set_wallpaper('current', idx)
 				set_wallpaper_logon.set_wallpaper_logon('current', idx, logonscreensize)
+
 
 if __name__=='__main__':
 	parser = argparse.ArgumentParser(description='mmwall: multi-machine background wallpaper changer')
