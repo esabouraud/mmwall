@@ -1,6 +1,6 @@
 # mmwall
 
-mmwall is a tool written in Python 2 (>= 2.6) and a bit of Windows Batch that sets a single wallpaper on a multi-screen, multi-machine setup.
+mmwall is a tool written in Python 2 (>= 2.7) and a bit of Windows Batch that sets a single wallpaper on a multi-screen, multi-machine setup.
 I wrote it to have a single background image spanning multiple screens and machines, especially when using a software KM switch (like Synergy).
 
 The way it works is:
