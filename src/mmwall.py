@@ -16,7 +16,7 @@ import randomdownload_wallpaper
 REMOTE_PATH = 't:\\.mmwall'
 
 
-def setremotewall(WALLHOST, WALLUSER, WALLPASS, idx):
+def setremotewall(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
 	CMD = 'net use t: \\\\%s\\C$\\Temp' % WALLHOST
 	if WALLUSER != None and WALLPASS != None:
 		CMD += ' /user:"%s" "%s"' % (WALLUSER, WALLPASS)
@@ -24,7 +24,8 @@ def setremotewall(WALLHOST, WALLUSER, WALLPASS, idx):
 	shutil.rmtree(REMOTE_PATH, True)
 	shutil.copytree('current', REMOTE_PATH + '\\local')
 	shutil.copy('set_wallpaper.py', REMOTE_PATH)
-	open(REMOTE_PATH + '\\wallcli.bat', 'w').write('python set_wallpaper.py -i %d\n' % idx)
+	shutil.copy('set_wallpaper_logon.py', REMOTE_PATH)
+	open(REMOTE_PATH + '\\wallcli.bat', 'w').write('python set_wallpaper.py -i %d\npython set_wallpaper_logon.py -i %d -s %s\n' % (idx, idx, (logonscreensize, )))
 	
 	CMD = 'psexec \\\\%s' % WALLHOST
 	if WALLUSER != None and WALLPASS != None:
@@ -59,11 +60,17 @@ def run_mmwall(cfgfile):
 		matchsec = re.match('^host-(\d+)$', sec)
 		if matchsec != None:
 			idx = int(matchsec.group(1))
+			
+			if config.has_option(sec, 'logonscreenwidth') and config.has_option(sec, 'logonscreenheight'):
+				logonscreensize = (config.getint(sec, 'logonscreenwidth'), config.getint(sec, 'logonscreenheight'))
+			else:
+				logonscreensize = (config.getint(sec, 'screenwidth'), config.getint(sec, 'screenheight'))
+			
 			if config.has_option(sec, 'remotehost'):
-				setremotewall(config.get(sec, 'remotehost'), None, None, idx)
+				setremotewall(config.get(sec, 'remotehost'), None, None, idx, logonscreensize)
 			else:
 				set_wallpaper.set_wallpaper('current', idx)
-				set_wallpaper_logon.set_wallpaper_logon('current', idx, (1280, 1024))
+				set_wallpaper_logon.set_wallpaper_logon('current', idx, logonscreensize)
 
 if __name__=='__main__':
 	parser = argparse.ArgumentParser(description='mmwall: multi-machine background wallpaper changer')
