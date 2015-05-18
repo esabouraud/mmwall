@@ -42,9 +42,12 @@ def setremotewall(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
 
 
 def run_mmwall(cfgfile):
-	config = ConfigParser.ConfigParser()
+	config = ConfigParser.ConfigParser({})
 	config.read(cfgfile)
 	screenratio = config.getfloat('general', 'screenratio')
+	imgsrc = config.get('general', 'imgsrc')
+	if imgsrc == '':
+		imgsrc = None
 	#print screenratio
 
 	screenconf = []
@@ -55,7 +58,7 @@ def run_mmwall(cfgfile):
 			screenconf.append((config.getint(sec, 'screenwidth'), config.getint(sec, 'screenheight'), config.getint(sec, 'screenvoffset'), idx))	
 	#print screenconf
 	
-	randomdownload_wallpaper.get_wallpaper(True, screenratio)
+	randomdownload_wallpaper.get_wallpaper(True, screenratio, imgsrc)
 	synergy_wallpaper.make_wallpapers(True, screenconf)
 	
 	for sec in config.sections():
