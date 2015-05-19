@@ -3,14 +3,12 @@
 
 from optparse import OptionParser
 from PIL import Image
-import ctypes
 import os
 import random
-from decimal import *
+from decimal import Decimal
 import glob
 import ast
 import itertools
-import operator
 from collections import namedtuple
 
 INPUTDIR = "data"

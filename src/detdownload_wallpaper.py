@@ -4,7 +4,7 @@
 from optparse import OptionParser
 from bs4 import BeautifulSoup
 import urllib2
-from decimal import *
+from decimal import Decimal
 import re
 import os
 

@@ -7,7 +7,7 @@ import os
 import glob
 import shutil
 import random
-from decimal import *
+from decimal import Decimal
 
 INPUTDIR = "wallpapers"
 OUTPUTDIR = "data"
