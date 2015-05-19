@@ -5,9 +5,9 @@
 
 import subprocess
 import shutil
-import ConfigParser
-import re
+import json
 import argparse
+import os
 
 import set_wallpaper
 import set_wallpaper_logon
@@ -16,6 +16,7 @@ import randomdownload_wallpaper
 
 
 REMOTE_PATH = 't:\\.mmwall'
+SRC_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
 def setremotewall(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
@@ -25,8 +26,8 @@ def setremotewall(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
 	subprocess.call(CMD)
 	shutil.rmtree(REMOTE_PATH, True)
 	shutil.copytree('current', REMOTE_PATH + '\\local')
-	shutil.copy('set_wallpaper.py', REMOTE_PATH)
-	shutil.copy('set_wallpaper_logon.py', REMOTE_PATH)
+	shutil.copy(os.path.join(SRC_PATH, 'set_wallpaper.py'), REMOTE_PATH)
+	shutil.copy(os.path.join(SRC_PATH, 'set_wallpaper_logon.py'), REMOTE_PATH)
 	open(REMOTE_PATH + '\\wallcli.bat', 'w').write('python set_wallpaper.py -i %d\npython set_wallpaper_logon.py -i %d -s %s\n' % (idx, idx, (logonscreensize, )))
 	
 	CMD = 'psexec \\\\%s' % WALLHOST
@@ -42,44 +43,40 @@ def setremotewall(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
 
 
 def run_mmwall(cfgfile):
-	config = ConfigParser.ConfigParser({})
-	config.read(cfgfile)
-	screenratio = config.getfloat('general', 'screenratio')
-	imgsrc = config.get('general', 'imgsrc')
-	if imgsrc == '':
+	cfg = json.load(open(cfgfile))
+	screenratio = cfg['general']['screenratio']
+	if cfg['general'].get('imgsrc'):
+		imgsrc = cfg['general']['imgsrc']
+	else:
 		imgsrc = None
 	#print screenratio
 
 	screenconf = []
-	for sec in config.sections():
-		matchsec = re.match('^host-(\d+)$', sec)
-		if matchsec != None:
-			idx = int(matchsec.group(1))
-			screenconf.append((config.getint(sec, 'screenwidth'), config.getint(sec, 'screenheight'), config.getint(sec, 'screenvoffset'), idx))	
+	for host in cfg['hosts']:
+		idx = host['id']
+		screenconf.append((host['screens'][0]['screenwidth'], host['screens'][0]['screenheight'], host['screens'][0]['screenvoffset'], idx))	
 	#print screenconf
 	
 	randomdownload_wallpaper.get_wallpaper(True, screenratio, imgsrc)
 	synergy_wallpaper.make_wallpapers(True, screenconf)
 	
-	for sec in config.sections():
-		matchsec = re.match('^host-(\d+)$', sec)
-		if matchsec != None:
-			idx = int(matchsec.group(1))	
-			if config.has_option(sec, 'logonscreenwidth') and config.has_option(sec, 'logonscreenheight'):
-				logonscreensize = (config.getint(sec, 'logonscreenwidth'), config.getint(sec, 'logonscreenheight'))
-			else:
-				logonscreensize = (config.getint(sec, 'screenwidth'), config.getint(sec, 'screenheight'))
-			
-			if config.has_option(sec, 'remotehost'):
-				setremotewall(config.get(sec, 'remotehost'), None, None, idx, logonscreensize)
-			else:
-				set_wallpaper.set_wallpaper('current', idx)
-				set_wallpaper_logon.set_wallpaper_logon('current', idx, logonscreensize)
+	for host in cfg['hosts']:
+		idx = host['id']
+		if host.get('logonscreenwidth') and host.get('logonscreenheight'):
+			logonscreensize = (host['logonscreenwidth'], host['logonscreenheight'])
+		else:
+			logonscreensize = (host['screens'][0]['screenwidth'], host['screens'][0]['screenheight'])
+		
+		if host.get('remotehost'):
+			setremotewall(host['remotehost'], None, None, idx, logonscreensize)
+		else:
+			set_wallpaper.set_wallpaper('current', idx)
+			set_wallpaper_logon.set_wallpaper_logon('current', idx, logonscreensize)
 
 
 if __name__=='__main__':
 	parser = argparse.ArgumentParser(description='mmwall: multi-machine background wallpaper changer')
-	parser.add_argument('-c', '--configuration', dest='cfgfile', default='mmwall.cfg', metavar='FILEPATH', help='mmwall configuration file path')
+	parser.add_argument('-c', '--configuration', dest='cfgfile', default='mmwallcfg.json', metavar='FILEPATH', help='mmwall configuration file path')
 	args = parser.parse_args()
 
 	run_mmwall(args.cfgfile)
