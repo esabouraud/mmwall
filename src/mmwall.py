@@ -19,7 +19,7 @@ REMOTE_PATH = 't:\\.mmwall'
 SRC_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
-def setremotewall(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
+def setremotewallwin(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
 	CMD = 'net use t: \\\\%s\\C$\\Temp' % WALLHOST
 	if WALLUSER != None and WALLPASS != None:
 		CMD += ' /user:"%s" "%s"' % (WALLUSER, WALLPASS)
@@ -45,16 +45,14 @@ def setremotewall(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
 def run_mmwall(cfgfile):
 	cfg = json.load(open(cfgfile))
 	screenratio = cfg['general']['screenratio']
-	if cfg['general'].get('imgsrc'):
-		imgsrc = cfg['general']['imgsrc']
-	else:
-		imgsrc = None
+	imgsrc = cfg['general'].get('imgsrc')
 	#print screenratio
 
 	screenconf = []
 	for host in cfg['hosts']:
 		idx = host['id']
-		screenconf.append((host['screens'][0]['screenwidth'], host['screens'][0]['screenheight'], host['screens'][0]['screenvoffset'], idx))	
+		for screen in host['screens']:
+			screenconf.append((screen['screenwidth'], screen['screenheight'], screen['screenvoffset'], idx))	
 	#print screenconf
 	
 	randomdownload_wallpaper.get_wallpaper(True, screenratio, imgsrc)
@@ -68,7 +66,10 @@ def run_mmwall(cfgfile):
 			logonscreensize = (host['screens'][0]['screenwidth'], host['screens'][0]['screenheight'])
 		
 		if host.get('remotehost'):
-			setremotewall(host['remotehost'], None, None, idx, logonscreensize)
+			if host.get('remoteos') == None or host.get('remoteos') == 'Windows':
+				setremotewallwin(host['remotehost'], None, None, idx, logonscreensize)
+			else:
+				print 'Remote host os "%s" unsupported.' % host['remoteos']
 		else:
 			set_wallpaper.set_wallpaper('current', idx)
 			set_wallpaper_logon.set_wallpaper_logon('current', idx, logonscreensize)

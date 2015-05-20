@@ -7,6 +7,7 @@
         {
             "id":0,
             "remotehost":"frws1484",
+            "_remoteos":"Windows",
             "screens":[
                 {
                     "screenwidth":1280,
@@ -19,7 +20,12 @@
             "id":1,
             "screens":[
                 {
-                    "screenwidth":2560,
+                    "screenwidth":1280,
+                    "screenheight":1024,
+                    "screenvoffset":0
+                },
+                {
+                    "screenwidth":1280,
                     "screenheight":1024,
                     "screenvoffset":0
                 }
