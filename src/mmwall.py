@@ -28,18 +28,55 @@ def setremotewallwin(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
 	shutil.copytree('current', REMOTE_PATH + '\\local')
 	shutil.copy(os.path.join(SRC_PATH, 'set_wallpaper.py'), REMOTE_PATH)
 	shutil.copy(os.path.join(SRC_PATH, 'set_wallpaper_logon.py'), REMOTE_PATH)
-	open(REMOTE_PATH + '\\wallcli.bat', 'w').write('python set_wallpaper.py -i %d\npython set_wallpaper_logon.py -i %d -s %s\n' % (idx, idx, (logonscreensize, )))
+	open(REMOTE_PATH + '\\mmwallcli.bat', 'w').write('python set_wallpaper.py -i %d\npython set_wallpaper_logon.py -i %d -s %s\n' % (idx, idx, (logonscreensize, )))
 	
 	CMD = 'psexec \\\\%s' % WALLHOST
 	if WALLUSER != None and WALLPASS != None:
 		CMD += '  -u "%s" -p "%s"' % (WALLUSER, WALLPASS)
-	CMD +=' -i -w "C:\\Temp\\.mmwall" "C:\\Temp\\.mmwall\\wallcli.bat"'
+	CMD +=' -i -w "C:\\Temp\\.mmwall" "C:\\Temp\\.mmwall\\mmwallcli.bat"'
 	subprocess.call(CMD)
 	
 	CMD = 'net use t: /d'
 	if WALLUSER != None and WALLPASS != None:
 		CMD += ' /user:"%s" "%s"' % (WALLUSER, WALLPASS)
 	subprocess.call(CMD)
+
+
+def setremotewallgnome(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
+	remotesh = open(os.path.join(SRC_PATH, 'mmwallcli.sh'), 'w')
+	remoteshlines = []
+	remoteshlines.append("rm -rf /tmp/.mmwall.del")
+	remoteshlines.append("eval `strings /proc/$(pgrep -u $(whoami) gnome-session)/environ | egrep '(DBUS_SESSION_BUS_ADDRESS|DISPLAY)'`")
+	remoteshlines.append("export DBUS_SESSION_BUS_ADDRESS DISPLAY")
+	remoteshlines.append("gconftool-2 --set /desktop/gnome/background/picture_filename --type string /tmp/.mmwall/local/wall%d.bmp" % idx)
+	remotesh.write("\n".join(remoteshlines))
+	remotesh.close()
+	
+	psftpbatch = open(os.path.join(SRC_PATH, 'mmwallpsftp'),'w')
+	psftpbatchlines = []
+	psftpbatchlines.append('cd /tmp')
+	psftpbatchlines.append('mv .mmwall .mmwall.del')
+	psftpbatchlines.append('mkdir .mmwall')
+	psftpbatchlines.append('cd .mmwall')
+	psftpbatchlines.append('put mmwallcli.sh')
+	psftpbatchlines.append('chmod u+x mmwallcli.sh')
+	psftpbatchlines.append('put -r current local')
+	psftpbatch.write("\n".join(psftpbatchlines))
+	psftpbatch.close()
+	
+	CMD = 'psftp %s -b %s -be' % (WALLHOST, psftpbatch.name)
+	if WALLUSER != None and WALLPASS != None:
+		CMD += ' -l %s -pw %s' % (WALLUSER, WALLPASS)
+	subprocess.check_call(CMD)
+	
+	puttycmd = open(os.path.join(SRC_PATH, 'mmwallputty'),'w')
+	puttycmd.write("/tmp/.mmwall/mmwallcli.sh")
+	puttycmd.close()
+	
+	CMD = 'putty -ssh %s -m %s' % (WALLHOST, puttycmd.name)
+	if WALLUSER != None and WALLPASS != None:
+		CMD += ' -l %s -pw %s' % (WALLUSER, WALLPASS)
+	subprocess.check_call(CMD)
 
 
 def run_mmwall(cfgfile):
@@ -66,8 +103,12 @@ def run_mmwall(cfgfile):
 			logonscreensize = (host['screens'][0]['screenwidth'], host['screens'][0]['screenheight'])
 		
 		if host.get('remotehost'):
+			remotelogin = host.get('login')
+			remotepw = host.get('password')
 			if host.get('remoteos') == None or host.get('remoteos') == 'Windows':
-				setremotewallwin(host['remotehost'], None, None, idx, logonscreensize)
+				setremotewallwin(host['remotehost'], remotelogin, remotepw, idx, logonscreensize)
+			elif host.get('remoteos') == 'Linux':
+				setremotewallgnome(host['remotehost'], remotelogin, remotepw, idx, logonscreensize)
 			else:
 				print 'Remote host os "%s" unsupported.' % host['remoteos']
 		else:
