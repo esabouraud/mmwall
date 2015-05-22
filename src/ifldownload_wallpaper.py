@@ -4,9 +4,9 @@
 from optparse import OptionParser
 from bs4 import BeautifulSoup
 import urllib2
-from decimal import *
 import re
 import os
+import random
 
 URL = "https://interfacelift.com/wallpaper/downloads/random/3_screens/4096x1024/"
 OUTPUTDIR = "data"
@@ -36,6 +36,7 @@ def get_wallpaper(singledl, minratio):
 	
 	soup = BeautifulSoup(html)
 	divs = soup.find_all("div", {"class":"download"})
+	random.shuffle(divs)
 	for d in divs:
 		aimg = d.find("a")
 		try:

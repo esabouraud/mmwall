@@ -7,6 +7,7 @@ import urllib2
 from decimal import Decimal
 import re
 import os
+import random
 
 URL = "http://deadendthrills.com/random/"
 OUTPUTDIR = "data"
@@ -40,6 +41,7 @@ def get_wallpaper(singledl, minratio):
 	div = soup.find("div", {"id": "content"}, {"role":"main"})
 	noscript = div.find("noscript")
 	aimgs = noscript.find_all("a")
+	random.shuffle(aimgs)
 	for a in aimgs:
 		img = a.find("img")
 		imgwidth = int(img.get("width"))

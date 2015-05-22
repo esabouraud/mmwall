@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import urllib2
 import re
 import os
+import random
 
 BASEURL = "http://www.triplemonitorbackgrounds.com"
 URL = BASEURL + "/random/"
@@ -38,6 +39,7 @@ def get_wallpaper(singledl, minratio):
 	soup = BeautifulSoup(html)
 	div = soup.find("div", {"id":"random"})
 	aimgs = div.find_all("a", {"title":True}, {"href":True})
+	random.shuffle(aimgs)
 	for a in aimgs:
 		if (a.find("img") == None):
 			continue
