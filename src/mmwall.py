@@ -6,7 +6,7 @@
 import subprocess
 import shutil
 import json
-import argparse
+import optparse
 import os
 
 import set_wallpaper
@@ -117,8 +117,8 @@ def run_mmwall(cfgfile):
 
 
 if __name__=='__main__':
-	parser = argparse.ArgumentParser(description='mmwall: multi-machine background wallpaper changer')
-	parser.add_argument('-c', '--configuration', dest='cfgfile', default='mmwallcfg.json', metavar='FILEPATH', help='mmwall configuration file path')
+	parser = optparse.OptionParser(description='mmwall: multi-machine background wallpaper changer')
+	parser.add_option('-c', '--configuration', dest='cfgfile', default='mmwallcfg.json', metavar='FILEPATH', help='mmwall configuration file path')
 	args = parser.parse_args()
 
 	run_mmwall(args.cfgfile)
