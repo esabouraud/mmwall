@@ -4,14 +4,14 @@ from optparse import OptionParser
 import os
 import ast
 import sys
+import platform
 from PIL import Image
 
 LOCALDIR = "local"
 FILEPATTERN = "wall%d.bmp"
+CURRENT_SYSTEM = platform.system()
 
-def set_wallpaper_logon(walldir, screenid, size):
-	if sys.platform.startswith("win") == False:
-		return
+def set_wallpaper_logon_windows(walldir, screenid, size):
 	if sys.getwindowsversion().major < 6:
 		return
 
@@ -22,7 +22,13 @@ def set_wallpaper_logon(walldir, screenid, size):
 	bg = im.crop((0, 0, size[0], size[1]))
 	bg.save(os.path.expandvars("%WinDir%\\Sysnative\\oobe\\Info\\backgrounds\\backgroundDefault.jpg"), "JPEG", quality=75)
 	#shutil.copyfile(filepath, os.path.expandvars("%WinDir%\\Sysnative\\oobe\\Info\\backgrounds\\backgroundDefault.jpg"))
-	
+
+def set_wallpaper_logon(walldir, screenid, size):
+	if CURRENT_SYSTEM == "Windows":
+		set_wallpaper_logon_windows(walldir, screenid, size)
+	else:
+		print "Setting logon wallpaper on platform %s is not supported." % CURRENT_SYSTEM
+
 
 if __name__=='__main__':
 	parser = OptionParser()

@@ -38,7 +38,14 @@ def setremotewallwin_windows(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize)
 
 
 def setremotewallgnome_windows(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
-	set_wallpaper.create_linux_script()
+	remotesh = open(os.path.join(SRC_PATH, 'mmwallcli.sh'), 'w')
+	remoteshlines = []
+	remoteshlines.append("rm -rf /tmp/.mmwall.del")
+	remoteshlines.append("eval `strings /proc/$(pgrep -u $(whoami) gnome-session)/environ | egrep '(DBUS_SESSION_BUS_ADDRESS|DISPLAY)'`")
+	remoteshlines.append("export DBUS_SESSION_BUS_ADDRESS DISPLAY")
+	remoteshlines.append("gconftool-2 --set /desktop/gnome/background/picture_filename --type string /tmp/.mmwall/local/wall%d.bmp" % idx)
+	remotesh.write("\n".join(remoteshlines))
+	remotesh.close()
 	
 	psftpbatch = open(os.path.join(SRC_PATH, 'mmwallpsftp'),'w')
 	psftpbatchlines = []
@@ -66,9 +73,17 @@ def setremotewallgnome_windows(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensiz
 		CMD += ' -l %s -pw %s' % (WALLUSER, WALLPASS)
 	subprocess.check_call(CMD)
 
+
 def setremotewallwin(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
-	setremotewallwin_windows(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize)
-	
+	if CURRENT_SYSTEM == "Windows":
+		setremotewallwin_windows(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize)
+	else:
+		print "Setting Windows wallpaper remotely on platform %s is not supported." % CURRENT_SYSTEM
+
+
 def setremotewallgnome(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
-	setremotewallgnome_windows(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize)
+	if CURRENT_SYSTEM == "Windows":
+		setremotewallgnome_windows(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize)
+	else:
+		print "Setting Linux wallpaper remotely on platform %s is not supported." % CURRENT_SYSTEM
 	

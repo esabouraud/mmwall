@@ -2,13 +2,22 @@
 
 from optparse import OptionParser
 import os
+import stat
+import platform
 import ctypes
+import subprocess
 
 LOCALDIR = "local"
 FILEPATTERN = "wall%d.bmp"
+SRC_PATH = os.path.dirname(os.path.abspath(__file__))
+CURRENT_SYSTEM = platform.system()
 
-# set windows background
-def set_wallpaper(walldir, screenid):
+# set Linux (CentOS6 with gnome) background
+def set_wallpaper_linux(walldir, screenid):
+	subprocess.call(['gconftool-2', '--set', '/desktop/gnome/background/picture_filename', '--type', 'string',  '%s/wall%d.bmp' % (os.path.abspath(walldir), screenid)])
+
+# set Windows (>= XP) background
+def set_wallpaper_windows(walldir, screenid):
 	filepath = os.path.abspath(os.path.join(walldir, FILEPATTERN % int(screenid)))
 	print "Setting wallpaper %s" % filepath
 	SPI_SETDESKWALLPAPER = 20
@@ -16,6 +25,14 @@ def set_wallpaper(walldir, screenid):
 	SPIF_SENDWININICHANGE = 0x02
 	
 	ctypes.windll.user32.SystemParametersInfoA(SPI_SETDESKWALLPAPER, 0, filepath, SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE)
+
+def set_wallpaper(walldir, screenid):
+	if CURRENT_SYSTEM == "Windows":
+		set_wallpaper_windows(walldir, screenid)
+	elif CURRENT_SYSTEM == "Linux":
+		set_wallpaper_linux(walldir, screenid)
+	else:
+		print "Platform %s is not supported, wallpaper not set." % CURRENT_SYSTEM
 
 if __name__=='__main__':
 	parser = OptionParser()

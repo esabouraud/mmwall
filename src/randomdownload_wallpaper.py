@@ -15,7 +15,7 @@ def get_wallpaper(singledl, minratio, imgsrc):
 		downloader = random.choice(DOWNLOADERS)
 	else:
 		downloader = DOWNLOADERS[[d.__name__ for d in DOWNLOADERS].index(imgsrc)]
-
+	#print downloader
 	downloader.get_wallpaper(singledl, minratio)
 			
 if __name__=='__main__':
