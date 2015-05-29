@@ -37,16 +37,19 @@ def setremotewallwin_windows(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize)
 	subprocess.call(CMD)
 
 
-def setremotewallgnome_windows(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
+
+def buildsshscript(idx):
 	remotesh = open(os.path.join(SRC_PATH, 'mmwallcli.sh'), 'w')
 	remoteshlines = []
+	remoteshlines.append("#!/bin/bash")
 	remoteshlines.append("rm -rf /tmp/.mmwall.del")
 	remoteshlines.append("eval `strings /proc/$(pgrep -u $(whoami) gnome-session)/environ | egrep '(DBUS_SESSION_BUS_ADDRESS|DISPLAY)'`")
 	remoteshlines.append("export DBUS_SESSION_BUS_ADDRESS DISPLAY")
 	remoteshlines.append("gconftool-2 --set /desktop/gnome/background/picture_filename --type string /tmp/.mmwall/local/wall%d.bmp" % idx)
 	remotesh.write("\n".join(remoteshlines))
 	remotesh.close()
-	
+
+def buildpsftpscript():
 	psftpbatch = open(os.path.join(SRC_PATH, 'mmwallpsftp'),'w')
 	psftpbatchlines = []
 	psftpbatchlines.append('cd /tmp')
@@ -59,7 +62,29 @@ def setremotewallgnome_windows(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensiz
 	psftpbatch.write("\n".join(psftpbatchlines))
 	psftpbatch.close()
 	
-	CMD = 'psftp %s -b %s -be' % (WALLHOST, psftpbatch.name)
+	return psftpbatch.name
+
+def buildsftpscript():
+	psftpbatch = open(os.path.join(SRC_PATH, 'mmwallpsftp'),'w')
+	psftpbatchlines = []
+	psftpbatchlines.append('cd /tmp')
+	psftpbatchlines.append('-rename .mmwall .mmwall.del')
+	psftpbatchlines.append('mkdir .mmwall')
+	psftpbatchlines.append('cd .mmwall')
+	psftpbatchlines.append('put mmwallcli.sh')
+	psftpbatchlines.append('chmod 744 mmwallcli.sh')
+	psftpbatchlines.append('mkdir local')
+	psftpbatchlines.append('put current/* local/')
+	psftpbatch.write("\n".join(psftpbatchlines))
+	psftpbatch.close()
+	
+	return psftpbatch.name
+
+def setremotewallgnome_windows(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
+	buildsshscript(idx)
+	psftpbatchname = buildpsftpscript()
+
+	CMD = 'psftp %s -b %s -be' % (WALLHOST, psftpbatchname)
 	if WALLUSER != None and WALLPASS != None:
 		CMD += ' -l %s -pw %s' % (WALLUSER, WALLPASS)
 	subprocess.check_call(CMD)
@@ -73,6 +98,29 @@ def setremotewallgnome_windows(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensiz
 		CMD += ' -l %s -pw %s' % (WALLUSER, WALLPASS)
 	subprocess.check_call(CMD)
 
+def setremotewallgnome_linux(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
+	buildsshscript(idx)
+	psftpbatchname = buildsftpscript()
+
+	CMD = ''
+	if WALLPASS != None:
+		CMD += 'sshpass -p %s ' % WALLPASS
+	CMD += 'sftp -oBatchMode=no -b %s ' % psftpbatchname
+	if WALLUSER != None:
+		CMD += '%s@' % WALLUSER
+	CMD += '%s ' % WALLHOST
+	print CMD
+	subprocess.call(CMD, shell=True)
+	
+	CMD = ''
+	if WALLPASS != None:
+		CMD += 'sshpass -p %s ' % WALLPASS
+	CMD += 'ssh '
+	if WALLUSER != None:
+		CMD += '%s@' % WALLUSER
+	CMD += '%s /tmp/.mmwall/mmwallcli.sh' % WALLHOST
+	print CMD
+	subprocess.check_call(CMD, shell=True)
 
 def setremotewallwin(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
 	if CURRENT_SYSTEM == "Windows":
@@ -84,6 +132,8 @@ def setremotewallwin(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
 def setremotewallgnome(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
 	if CURRENT_SYSTEM == "Windows":
 		setremotewallgnome_windows(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize)
+	elif CURRENT_SYSTEM == "Linux":
+		setremotewallgnome_linux(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize)
 	else:
 		print "Setting Linux wallpaper remotely on platform %s is not supported." % CURRENT_SYSTEM
 	
