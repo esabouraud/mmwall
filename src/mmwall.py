@@ -1,7 +1,9 @@
 #!/bin/python
 
 # mmwall launcher
-# mmwall currently only works on windows, for wallpaper local and remote setting (uses Win32 API, network drive mount and psexec)
+# mmwall currently only works on Windows and CentOS, for wallpaper local and remote setting:
+#   Win32 API, network drive mount and psexec for Windows >= XP.
+#   sftp, ssh and Gnome configuration tool for CentOS >= 5.
 
 import json
 import optparse

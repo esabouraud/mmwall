@@ -18,10 +18,11 @@ Its common dependencies are:
   * (master) lxml (http://lxml.de/)
   
 Its Windows specific dependencies are:
-  * (master) PsExec (https://technet.microsoft.com/en-us/sysinternals/bb897553)
+  * (all) PsExec (https://technet.microsoft.com/en-us/sysinternals/bb897553)
   * (master) PuTTY, PSFTP (http://www.chiark.greenend.org.uk/~sgtatham/putty/)
 
 Its Linux specific dependencies are:
   * (master) libjpeg-devel libpng-devel
-  * (master) ssh sftp sshpass 
+  * (master) ssh sftp sshpass
+  * (master) winexe
   * (remote) sshd

@@ -1,5 +1,8 @@
 #!/bin/python
 
+# Implementation of mmwall's "Poor man's RPC"
+# The goal is do RPC to change wallpaper remotely without relying on an additional custom client-server layer. 
+# This cannot be done in pure python, so some pre-existing external tools are used.
 
 import subprocess
 import shutil
@@ -70,9 +73,15 @@ def setremotewallwin_linux(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
 	CMD = 'winexe'
 	if WALLUSER != None and WALLPASS != None:
 		CMD += ' -U"%s%%%s"' % (WALLUSER, WALLPASS)
-	CMD += ' --interactive=1 --system --uninstall'
+	CMD += ' --interactive=0 --reinstall --uninstall'
 	CMD += ' "//%s"' % WALLHOST
-	CMD += ' "C:\\Temp\\.mmwall\\mmwallcli.bat"'
+	# Direct call of mmwallcli.bat does not work as winexe has no way to join a running session.
+	# PsExec comes to the rescue, but this is somehow even dirtier than the rest. 
+	CMD += ' \'psexec \\\\localhost'
+	if WALLUSER != None and WALLPASS != None:
+		CMD += ' -u "%s" -p "%s"' % (WALLUSER, WALLPASS)
+	CMD +=' -i -w "C:\\Temp\\.mmwall" "C:\\Temp\\.mmwall\\mmwallcli.bat"\''
+	#CMD += ' "C:\\Temp\\.mmwall\\mmwallcli.bat"'
 	#print CMD
 	subprocess.call(CMD, shell=True)
 
