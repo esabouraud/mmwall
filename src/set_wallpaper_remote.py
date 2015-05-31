@@ -38,6 +38,7 @@ def setremotewallwin_windows(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize)
 
 def setremotewallwin_linux(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
 	wincmd = []
+	wincmd.append('whoami')
 	wincmd.append('rd /s /q C:\\Temp\\.mmwall.del')
 	wincmd.append('cd C:\\Temp\\.mmwall')
 	wincmd.append('python set_wallpaper.py -i %d' % idx)
@@ -69,16 +70,11 @@ def setremotewallwin_linux(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
 	CMD = 'winexe'
 	if WALLUSER != None and WALLPASS != None:
 		CMD += ' -U"%s%%%s"' % (WALLUSER, WALLPASS)
+	CMD += ' --interactive=1 --system --uninstall'
 	CMD += ' "//%s"' % WALLHOST
 	CMD += ' "C:\\Temp\\.mmwall\\mmwallcli.bat"'
 	#print CMD
 	subprocess.call(CMD, shell=True)
-
-	"""CMD = 'psexec \\\\%s' % WALLHOST
-	if WALLUSER != None and WALLPASS != None:
-		CMD += '  -u "%s" -p "%s"' % (WALLUSER, WALLPASS)
-	CMD +=' -i -w "C:\\Temp\\.mmwall" "C:\\Temp\\.mmwall\\mmwallcli.bat"'
-	subprocess.call(CMD)"""
 
 
 def buildsshscript(idx):
@@ -181,4 +177,4 @@ def setremotewallgnome(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
 		setremotewallgnome_linux(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize)
 	else:
 		print "Setting Linux wallpaper remotely on platform %s is not supported." % CURRENT_SYSTEM
-	
+

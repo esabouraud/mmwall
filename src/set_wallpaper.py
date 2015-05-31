@@ -6,6 +6,7 @@ import stat
 import platform
 import ctypes
 import subprocess
+import time
 
 LOCALDIR = "local"
 FILEPATTERN = "wall%d.bmp"
@@ -20,11 +21,19 @@ def set_wallpaper_linux(walldir, screenid):
 def set_wallpaper_windows(walldir, screenid):
 	filepath = os.path.abspath(os.path.join(walldir, FILEPATTERN % int(screenid)))
 	print "Setting wallpaper %s" % filepath
-	SPI_SETDESKWALLPAPER = 20
+	SPI_SETDESKWALLPAPER = 0x0014
+	SPI_GETDESKWALLPAPER = 0x0073
 	SPIF_UPDATEINIFILE = 0x01
 	SPIF_SENDWININICHANGE = 0x02
 	
-	ctypes.windll.user32.SystemParametersInfoA(SPI_SETDESKWALLPAPER, 0, filepath, SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE)
+	s = ctypes.create_string_buffer(512)
+	ctypes.windll.user32.SystemParametersInfoA(SPI_GETDESKWALLPAPER, 512, s, 0)
+	print s.raw
+	
+	ret = ctypes.windll.user32.SystemParametersInfoA(SPI_SETDESKWALLPAPER, 0, filepath, SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE)
+	if ret == 0:
+		error = ctypes.WinError()
+		print 'SystemParametersInfoA error=%s' % (ret, error)
 
 def set_wallpaper(walldir, screenid):
 	if CURRENT_SYSTEM == "Windows":
