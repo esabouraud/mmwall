@@ -2,11 +2,9 @@
 
 from optparse import OptionParser
 import os
-import stat
 import platform
 import ctypes
 import subprocess
-import time
 
 LOCALDIR = "local"
 FILEPATTERN = "wall%d.bmp"

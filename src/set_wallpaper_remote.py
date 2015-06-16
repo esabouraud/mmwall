@@ -6,11 +6,8 @@
 
 import subprocess
 import shutil
-import optparse
 import os
 import platform
-
-import set_wallpaper
 
 REMOTE_PATH = 't:\\.mmwall'
 SRC_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -41,7 +38,6 @@ def setremotewallwin_windows(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize)
 
 def setremotewallwin_linux(WALLHOST, WALLUSER, WALLPASS, idx, logonscreensize):
 	wincmd = []
-	wincmd.append('whoami')
 	wincmd.append('rd /s /q C:\\Temp\\.mmwall.del')
 	wincmd.append('cd C:\\Temp\\.mmwall')
 	wincmd.append('python set_wallpaper.py -i %d' % idx)
