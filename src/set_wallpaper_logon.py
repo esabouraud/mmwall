@@ -20,8 +20,10 @@ def set_wallpaper_logon_windows(walldir, screenid, size):
 	print "Setting wallpaper logon from %s" % inputimagepath
 	im = Image.open(inputimagepath)
 	bg = im.crop((0, 0, size[0], size[1]))
-	bg.save(os.path.expandvars("%WinDir%\\Sysnative\\oobe\\Info\\backgrounds\\backgroundDefault.jpg"), "JPEG", quality=75)
-	#shutil.copyfile(filepath, os.path.expandvars("%WinDir%\\Sysnative\\oobe\\Info\\backgrounds\\backgroundDefault.jpg"))
+	LOGONBG_DIR = os.path.expandvars("%WinDir%\\Sysnative\\oobe\\Info\\backgrounds")
+	if (os.path.exists(LOGONBG_DIR) == False):
+		os.makedirs(LOGONBG_DIR)
+	bg.save(LOGONBG_DIR + "\\backgroundDefault.jpg", "JPEG", quality=75)
 
 def set_wallpaper_logon(walldir, screenid, size):
 	if CURRENT_SYSTEM == "Windows":
