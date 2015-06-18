@@ -14,6 +14,7 @@ import set_wallpaper_remote
 import synergy_wallpaper
 import randomdownload_wallpaper
 
+VERSION_PROGRAM = '0.1.0'
 
 def run_mmwall(cfgfile):
 	cfg = json.load(open(cfgfile))
@@ -53,7 +54,7 @@ def run_mmwall(cfgfile):
 
 
 if __name__=='__main__':
-	parser = optparse.OptionParser(description='mmwall: multi-machine background wallpaper changer')
+	parser = optparse.OptionParser(description='mmwall: multi-machine background wallpaper changer', version="%prog " + VERSION_PROGRAM)
 	parser.add_option('-c', '--configuration', dest='cfgfile', default='mmwallcfg.json', metavar='FILEPATH', help='mmwall configuration file path')
 	(options, args) = parser.parse_args()
 
